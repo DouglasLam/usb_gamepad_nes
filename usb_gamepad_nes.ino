@@ -1,30 +1,25 @@
 /*
  *  
  *  
- *    Source: https://www.allaboutcircuits.com/projects/nes-controller-interface-with-an-arduino-uno/
- *  
+ *    Requires:   https://github.com/DouglasLam/ArduinoJoystickLibrary
+ *    
+ *    Reference:  https://www.allaboutcircuits.com/projects/nes-controller-interface-with-an-arduino-uno/
  *  
  */
-
-
 #include <Joystick.h>
 
-const int A_BUTTON         = 0;
-const int B_BUTTON         = 1;
-const int SELECT_BUTTON    = 2;
-const int START_BUTTON     = 3;
-const int UP_BUTTON        = 4;
-const int DOWN_BUTTON      = 5;
-const int LEFT_BUTTON      = 6;
-const int RIGHT_BUTTON     = 7;
-//  Pro Micro Digital IOs: 2-10, 14-16
-const int clk = 5;  
-const int latch = 6;
-const int din = 7;
-
-int latch_data_delay = 10;
-int data_in_delay = 100;
-int loop_delay = 10 ;
+const int A_BUTTON        = 0;
+const int B_BUTTON        = 1;
+const int SELECT_BUTTON   = 2;
+const int START_BUTTON    = 3;
+const int UP_BUTTON       = 4;
+const int DOWN_BUTTON     = 5;
+const int LEFT_BUTTON     = 6;
+const int RIGHT_BUTTON    = 7;
+const int clk             = 5;  
+const int latch           = 6;
+const int din             = 7;
+const int loop_delay      = 10;
 
 String button_name[8] = { "A", "B", "SELECT", "START", "UP", "DOWN", "LEFT", "RIGHT" };
 
