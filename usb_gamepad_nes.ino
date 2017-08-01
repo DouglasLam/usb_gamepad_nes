@@ -1,4 +1,32 @@
+/*
+ *  
+ *  
+ *    Source: https://www.allaboutcircuits.com/projects/nes-controller-interface-with-an-arduino-uno/
+ *  
+ *  
+ */
+
+
 #include <Joystick.h>
+
+const int A_BUTTON         = 0;
+const int B_BUTTON         = 1;
+const int SELECT_BUTTON    = 2;
+const int START_BUTTON     = 3;
+const int UP_BUTTON        = 4;
+const int DOWN_BUTTON      = 5;
+const int LEFT_BUTTON      = 6;
+const int RIGHT_BUTTON     = 7;
+//  Pro Micro Digital IOs: 2-10, 14-16
+const int clk = 5;  
+const int latch = 6;
+const int din = 7;
+
+int latch_data_delay = 10;
+int data_in_delay = 100;
+int loop_delay = 10 ;
+
+String button_name[8] = { "A", "B", "SELECT", "START", "UP", "DOWN", "LEFT", "RIGHT" };
 
 Joystick_ Joystick(
   JOYSTICK_DEFAULT_REPORT_ID,
@@ -9,40 +37,35 @@ Joystick_ Joystick(
   false, false, false,    // No Rx, Ry, or Rz
   false, false,           // No rudder or throttle
   false, false, false);   // No accelerator, brake, or steering
-//  Micro Pro Digital IOs: 2-10, 14-16
-int clk = 2;  // is this right?  I'm using DIO#, shouldn't this be pin#?
-int din = 3;  // is this right?  I'm using DIO#, shouldn't this be pin#?
-int latch = 4;  // is this right?  I'm using DIO#, shouldn't this be pin#?
-int latch_data_delay = 10;
-int data_in_delay = 10;
-int loop_delay = 10;
-int controllerDataIn[8];
-int currentButtonState[8];  
   
-void toggle_clk(int delay_time=10){
+void toggle_clk(){
   // keep clock high so a low to high transition gets the next value
-   digitalWrite(clk,0);
-   delay(delay_time);
-   digitalWrite(clk,1);
+   digitalWrite(clk,LOW);
+   digitalWrite(clk,HIGH);
 }
 
 void latch_data() {
-  digitalWrite(latch,1);
-  delay(10);
-  digitalWrite(latch,0);
+  digitalWrite(latch,HIGH);
+  digitalWrite(latch,LOW);
+}
+
+byte read_in_nes_data(){
+  int controllerDataIn = 255;
+  
+  latch_data();
+  for (int index = 0; index < 8; index++){
+    if (digitalRead(din) == LOW){
+      Serial.print("\tBUTTON ");
+      Serial.print(button_name[index]);
+      Serial.println(" was pressed");
+    }
+    toggle_clk();
+    delay(10);
+  }  
+  return controllerDataIn;
 }
 
 void sendDataOverUsb(){
-  // [0-7]:  A, B, SELECT, START, UP, DOWN, LEFT, RIGHT
-  Serial.print("A\t\t" + controllerDataIn[0]);
-  Serial.print("B\t\t" + controllerDataIn[1]);
-  Serial.print("SELECT\t" + controllerDataIn[2]);  
-  Serial.print("START\t" + controllerDataIn[3]);
-  Serial.print("UP\t\t" + controllerDataIn[4]);
-  Serial.print("DOWN\t" + controllerDataIn[5]);
-  Serial.print("LEFT\t" + controllerDataIn[6]);
-  Serial.print("RIGHT\t" + controllerDataIn[7]);
-  Serial.print("*****************************\n\n");
 
 }
 
@@ -53,6 +76,10 @@ void setup() {
   pinMode(din, INPUT);
   pinMode(latch, OUTPUT);
 
+  // Initialize latch and clk
+  digitalWrite(latch, LOW);
+  digitalWrite(clk, HIGH);
+
   // Initialize Joystick Library
   Joystick.begin();
   Joystick.setXAxisRange(-1, 1);
@@ -60,18 +87,7 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(clk,1);    // reset clock
-  latch_data;
-  delay(latch_data_delay);
-  
-  
-  // Read pin values
-  for (int index = 0; index < 8; index++)
-  {
-    toggle_clk();
-    controllerDataIn[index] = digitalRead(din);
-  }
-  sendDataOverUsb();
+  read_in_nes_data();
   delay(loop_delay);
 }
 
