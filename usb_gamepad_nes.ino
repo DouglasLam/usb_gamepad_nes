@@ -45,26 +45,65 @@ void latch_data() {
 }
 
 byte read_in_nes_data(){
-  int controllerDataIn = 255;
+  int data_in = 255;
   
   latch_data();
   for (int index = 0; index < 8; index++){
     if (digitalRead(din) == LOW){
+      switch (index){
+        case 0:  // A Button
+          bitClear(data_in, A_BUTTON);
+          break;
+        case 1: // B Button
+          bitClear(data_in, B_BUTTON);
+          break;
+        case 2: // SELECT Button
+          bitClear(data_in, SELECT_BUTTON);
+          break;
+        case 3: // START Button
+          bitClear(data_in, START_BUTTON);
+          break;
+        case 4: // UP Button
+          bitClear(data_in, UP_BUTTON);
+          break;
+        case 5: // DOWN Button
+          bitClear(data_in, DOWN_BUTTON);
+          break;
+        case 6: // LEFT Button
+          bitClear(data_in, LEFT_BUTTON);
+          break;     
+        case 7: // RIGHT Button
+          bitClear(data_in, RIGHT_BUTTON);
+          break;
+      }                     
       Serial.print("\tBUTTON ");
       Serial.print(button_name[index]);
       Serial.println(" was pressed");
     }
     toggle_clk();
-    delay(10);
   }  
-  return controllerDataIn;
+  return data_in;
 }
 
-void sendDataOverUsb(){
+void send_data_over_usb(byte controller_data){
+  //  D-Pad
+  if (bitRead(controller_data, UP_BUTTON) == 0){Joystick.setYAxis(-1);}
+  else if (bitRead(controller_data, DOWN_BUTTON) == 0){Joystick.setYAxis(1);}
+  else{Joystick.setYAxis(0);}  
+  if (bitRead(controller_data, RIGHT_BUTTON) == 0){Joystick.setXAxis(1);}
+  else if (bitRead(controller_data, LEFT_BUTTON) == 0){Joystick.setXAxis(-1);}
+  else{Joystick.setXAxis(0);}
 
+  //  BUTTONS
+  if (bitRead(controller_data, SELECT_BUTTON) == 0){ Joystick.setButton(0, 1);}
+  else {Joystick.setButton(0,0);}
+  if (bitRead(controller_data, START_BUTTON) == 0){ Joystick.setButton(1, 1);}
+  else {Joystick.setButton(1,0);}
+  if (bitRead(controller_data, B_BUTTON) == 0){ Joystick.setButton(2, 1);}
+  else {Joystick.setButton(2,0);}
+  if (bitRead(controller_data, A_BUTTON) == 0){ Joystick.setButton(3, 1);}
+  else {Joystick.setButton(3,0);}
 }
-
-
 
 void setup() {
   pinMode(clk, OUTPUT);
@@ -82,7 +121,8 @@ void setup() {
 }
 
 void loop() {
-  read_in_nes_data();
+  byte controller_data = read_in_nes_data();
+  send_data_over_usb(controller_data);
   delay(loop_delay);
 }
 
